@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Camaras brazorobot(Ruben Contreras)</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #000000;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">camara brazorobot (Ruben Contreras)<br/>
+            Usar flecha arriba y abajo para rotar.<br/>
+            Usar flechas laterales para rotar.<br/>
+            Usar Z y X para rotar.    <br/>
+        </div>
+    <script src="js/three.min.js"></script>
+
+    <script>
+var scene, aspect, camera, camera2,camera3, camera4, renderer, controls;
+var  eje1, eje2, brazo1, brazo2;
+ var mapWidth = 320, mapHeight = 240;
+        var w = window.innerWidth, h = window.innerHeight;
+        var frustumSize = 5;
+var startTime = Date.now();
+
+
+		var geoEsfera, geoCilindro, geoCilindro;
+var rightFoot, rightLeg, rightArm, rightHand;
+var leftFoot, leftLeg, leftArm, leftHand;
+var startTime = Date.now();
+
+var upArrow = false;
+var downArrow = false;
+var leftArrow = false;
+var rightArrow = false;
+var scaleUp = false;
+var scaleDown = false;
+var xAxis = true;
+var yAxis = false;
+var zAxis = false;
+var	xArrow = false;
+var	zArrow = false;
+var thetaSum=0;
+var positivo=false;
+
+init();
+animate();
+render();
+
+function init(){
+scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0xAAAAAA );
+aspect = window.innerWidth / window.innerHeight;
+camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+var onKeyDown = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: 
+						upArrow = true;
+						break;
+					case 40: 
+						downArrow = true;
+						break;
+					case 37:
+						leftArrow = true;
+						break;
+					case 39:
+						rightArrow = true;
+						break;
+					case 88:
+						xArrow = true;
+						break;
+					case 90:
+						zArrow = true;
+						break;}
+						};
+	var onKeyUp = function ( event ) {
+			switch ( event.keyCode ) {
+				case 38: 
+					upArrow = false;
+					break;
+				case 40:
+					downArrow = false;
+					break;
+				case 37:
+					leftArrow = false;
+					break;
+				case 39:
+					rightArrow = false;
+					break;
+					case 88:
+						xArrow = false;
+						break;
+					case 90:
+						zArrow = false;
+						break;}
+					};
+
+ var width = 16.0;
+var height = 9.0;
+var FOV = 45.0; //Ángulo de apertura
+var sinFOV = Math.sin((FOV/2.0)*Math.PI/180.0);
+var aR = width/height; //AspectRatio
+var nearZ = 1;
+var farZ = 10;
+var COA = new THREE.Vector3(-5,2,0);
+var planeGeometry = new THREE.PlaneGeometry(width, height);
+           
+            camera2 = new THREE.OrthographicCamera( frustumSize * aspect / - 0.5,  //left — Camera frustum left plane.
+                                                    frustumSize * aspect / 0.5,    //right — Camera frustum right plane.
+                                                    frustumSize / 0.5,             //top — Camera frustum top plane.
+                                                    frustumSize / - 0.5,           //bottom — Camera frustum bottom plane.
+                                                    1,                           //near — Camera frustum near plane.
+                                                    100 );
+            var helper = new THREE.CameraHelper( camera2 );
+            scene.add( helper );
+
+camera3 = new THREE.OrthographicCamera( frustumSize * aspect / - 0.5,  //left — Camera frustum left plane.
+                                                    frustumSize * aspect / 0.5,    //right — Camera frustum right plane.
+                                                    frustumSize / 0.5,             //top — Camera frustum top plane.
+                                                    frustumSize / - 0.5,           //bottom — Camera frustum bottom plane.
+                                                    1,                           //near — Camera frustum near plane.
+                                                    100 );
+            var helper = new THREE.CameraHelper( camera3 );
+            scene.add( helper );
+
+			
+			camera4 = new THREE.OrthographicCamera( frustumSize * aspect / - 0.5,  //left — Camera frustum left plane.
+                                                    frustumSize * aspect / 0.5,    //right — Camera frustum right plane.
+                                                    frustumSize / 0.5,             //top — Camera frustum top plane.
+                                                    frustumSize / - 0.5,           //bottom — Camera frustum bottom plane.
+                                                    1,                           //near — Camera frustum near plane.
+                                                    100 );
+            var helper = new THREE.CameraHelper( camera4 );
+            scene.add( helper );
+ 	
+//EVENTOS DE TECLADO
+
+
+
+					
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );		
+	
+	// CREAR LAS GEOMETRIAS
+	geoRec = new THREE.Geometry();
+	var resCub=10;
+	
+	    for( var i = 0; i < resCub; i++){
+            for( var j = 0; j < resCub; j++){
+				for( var k = 0; k < resCub; k++){
+                   var punto1 = new THREE.Vector3();
+                   punto1.x =  (i/5);
+                   punto1.y = (j/5);
+                   punto1.z = k/5;
+
+                    geoRec.vertices.push( punto1 );
+					}
+				}
+			}
+			
+			var matRec = new THREE.PointsMaterial( { color: 'green', size: 0.1 } );
+	
+			
+	//Geometria 2 Esfera		
+	
+	geoEsfera = new THREE.Geometry();
+	var increRadE= Math.PI/25;
+	var resES=2;
+	
+		//Esfera sacada de: http://esferaopengl.blogspot.com/;
+	        for( var i = 0; i <  Math.PI; i+=increRadE){
+                for( var j = 0; j < 2*Math.PI; j+=increRadE){
+                    var punto2 = new THREE.Vector3();
+					
+					punto2.z = 1 * Math.cos(j) * Math.sin(i) ;
+                    punto2.y = 1 * Math.cos(i) ;
+                    punto2.x = 1 * Math.sin(j) * Math.sin(i) ;
+                    geoEsfera.vertices.push( punto2 );
+                }
+            }
+			
+			
+			var matEsf = new THREE.PointsMaterial( { color: 'red', size: 0.1 } );
+	
+	
+	
+	//Geometria 3 Cilindro
+	
+	geoCilindro = new THREE.Geometry();
+			
+        var increRadC= Math.PI/45;
+			var resCi=10;
+			for( var i = 0; i <  2*Math.PI; i+=increRadC){
+			for ( var j=0; j < resCi*2; j++){
+			 var punto3 = new THREE.Vector3();
+					punto3.z = (1 * Math.sin(i)) ;
+                    punto3.y = (j/resCi);
+                    punto3.x = (1 * Math.cos(i)) ;
+                    geoCilindro.vertices.push( punto3 );
+			}
+			}
+
+			var matCil = new THREE.PointsMaterial( { color: 'yellow', size: 0.1 } );
+
+	
+		//crear los objetos
+	
+	base = new THREE.Points(geoRec, matRec);
+	scene.add(base);
+	
+	eje1 = new THREE.Points(geoEsfera, matEsf);
+	eje1.translateY(2);
+	eje1.translateZ(1);
+	eje1.translateX(1);
+	base.add(eje1);
+	
+	brazo1 = new THREE.Points(geoCilindro, matCil);
+	brazo1.translateY(0.5);
+	eje1.add(brazo1);
+	
+	eje2 = new THREE.Points(geoEsfera, matEsf);
+	eje2.translateY(2.8);
+	eje1.add(eje2);
+	
+	brazo2 = new THREE.Points(geoCilindro, matCil);
+	eje2.add(brazo2);
+	
+	
+	eje3 = new THREE.Points(geoEsfera, matEsf);	
+	eje3.translateY(2.5);
+	brazo2.add(eje3);
+	
+			camera.position.x = 10;
+			camera.position.y = 10;	 
+		  	camera.position.z = 15;
+	
+//ELEMENTOS DE ESCENA
+ 
+var size = 25;
+var arrowSize = 1;
+var divisions = size;
+var origin = new THREE.Vector3( 0, 0, 0 );
+var x = new THREE.Vector3( 1, 0, 0 );
+var y = new THREE.Vector3( 0, 1, 0 );
+ 	var z = new THREE.Vector3( 0, 0, 1 );
+var color1 = new THREE.Color( 0x8A0808);
+ 	var color2 = new THREE.Color( 0x00000 );
+            var color3 = new THREE.Color( 0x000000 );
+ 	var colorR = new THREE.Color( 0xAA0000 );
+ 	var colorG = new THREE.Color( 0x00AA00 );
+ 	var colorB = new THREE.Color( 0x0000AA );
+var colorRd = new THREE.Color( 0xAA6666 );
+ 	var colorGd = new THREE.Color( 0x66AA66 );
+ 	var colorBd = new THREE.Color( 0x6666AA );
+	var color8 = new THREE.Color( 0x6006AA );
+	
+	
+	var spotLight = new THREE.SpotLight( 0xffffff );
+spotLight.position.set( 0, 0, 0 );
+scene.add( spotLight );
+
+var spotLightHelper = new THREE.SpotLightHelper( spotLight );
+scene.add( spotLightHelper )
+ 
+ 	//CREAR LAS GRILLAS PARA EL ESCENARIO
+ 	var axesHelper1 = new THREE.AxesHelper( size/10 );
+var axesHelper2 = new THREE.AxesHelper( size/10 );
+var axesHelper3 = new THREE.AxesHelper( size/10 );
+ 	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+ 	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+ 	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+
+//CREAR LAS GEOMETRÍAS
+
+
+//CREAR LOS OBJETOS
+
+
+
+ var matChanger = function( ) {
+                frustumSize = effectController.frustum;
+                aspect = effectController.aspect;
+                //camera2.frustum = frustumSize;
+                camera2.left   = - frustumSize * aspect / 2;
+                camera2.right  =   frustumSize * aspect / 2;
+                camera2.top    =   frustumSize / 2;
+                camera2.bottom = - frustumSize / 2;
+                camera2.near = effectController.nearPlane;
+                camera2.far = effectController.farPlane;
+
+                camera2.updateProjectionMatrix();
+                helper.update();
+
+
+
+
+ frustumSize = effectController.frustum;
+                aspect = effectController.aspect;
+                //camera2.frustum = frustumSize;
+                camera3.left   = - frustumSize * aspect / 2;
+                camera3.right  =   frustumSize * aspect / 2;
+                camera3.top    =   frustumSize / 2;
+                camera3.bottom = - frustumSize / 2;
+                camera3.near = effectController.nearPlane;
+                camera3.far = effectController.farPlane;
+
+                camera3.updateProjectionMatrix();
+                helper.update();
+				
+				
+				frustumSize = effectController.frustum;
+                aspect = effectController.aspect;
+                //camera2.frustum = frustumSize;
+                camera4.left   = - frustumSize * aspect / 2;
+                camera4.right  =   frustumSize * aspect / 2;
+                camera4.top    =   frustumSize / 2;
+                camera4.bottom = - frustumSize / 2;
+                camera4.near = effectController.nearPlane;
+                camera4.far = effectController.farPlane;
+
+                camera4.updateProjectionMatrix();
+                helper.update();
+            };
+
+
+
+
+//MOVER LA CAMARA
+camera.position.x = 10;
+camera.position.y = 3;	 
+ 	camera.position.z = 10;	
+ 	camera.lookAt( origin );
+
+renderer.render( scene, camera );
+
+camera3.position.x = 0;
+camera3.position.y = 15;	 
+ 	camera3.position.z =0;	
+ 	camera3.lookAt( origin );
+
+renderer.render( scene, camera3 );
+
+camera2.position.x = 10;
+camera2.position.y = 0;	 
+ 	camera2.position.z = 0;	
+ 	camera2.lookAt( origin );
+
+renderer.render( scene, camera2 );
+
+camera4.position.x = 0;
+camera4.position.y = 0;	 
+ 	camera4.position.z = 10;	
+ 	camera4.lookAt( origin );
+
+renderer.render( scene, camera4 );
+
+
+}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+		
+		
+
+
+        renderer.setViewport( 0, 0, w, h );
+            renderer.setScissor( 0, 0, w, h );
+            renderer.render( scene, camera );
+            renderer.setViewport( 640, h - mapHeight - 210, 640, 500 );
+            renderer.setScissor( 640, h - mapHeight - 210, 640, 500 );
+            renderer.setScissorTest( true );
+            camera.lookAt( 0, 0, 0 );
+renderer.render( scene, camera2 );
+renderer.setScissor(0, h - mapHeight - 210,640,500);
+renderer.setViewport(0,h - mapHeight - 210,640,500);
+renderer.render( scene, camera3 );
+
+renderer.render( scene, camera3 );
+renderer.setScissor(1280, h - mapHeight - 210,640,500);
+renderer.setViewport(1280,h - mapHeight - 210,640,500);
+renderer.render( scene, camera2 );
+
+renderer.render( scene, camera2 );
+renderer.setScissor(1280, h - mapHeight - 210,640,500);
+renderer.setViewport(1280,h - mapHeight - 210,640,500);
+renderer.render( scene, camera4 );
+
+var tx=0, ty=0, tz=0, s=1;
+		
+		if(upArrow) {
+			tz=0.1;
+		}
+		if(downArrow) {
+			tz=-0.1;
+		}
+		if(leftArrow) {
+			tx=0.1;
+		}
+		if(rightArrow) {
+			tx=-0.1;
+		}
+		if(xArrow) {
+			ty=0.1;
+		}
+		if(zArrow) {
+			ty=-0.1;
+		}
+	
+		/*	
+		//MATRIZ DE TRASLACIÓN
+		var s = new THREE.Matrix4();
+		s.set( 	1, 0, 0, tx,
+				0, 1, 0, ty, 
+				0, 0, 1, tz,
+				0, 0, 0, 1	);
+		brazo1.applyMatrix(s);	
+		brazo1.elementsNeedUpdate = true;
+		*/
+		base.rotateY(ty);
+		base.elementsNeedUpdate = true;
+		eje1.rotateX(tx);
+		eje1.elementsNeedUpdate = true;
+		eje2.rotateZ(tz);
+		eje2.elementsNeedUpdate = true;
+
+
+    }
+    </script>
+  </body>
+</html>

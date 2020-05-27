@@ -1,0 +1,8 @@
+https://threejs.org/docs/#api/en/math/Triangle
+https://threejs.org/docs/#api/en/lights/PointLight
+https://github.com/mrdoob/three.js/issues/7720
+https://discourse.threejs.org/t/triangle-strip-vs-triangle-list-which-one-is-better/11518
+https://threejs.org/docs/#api/en/core/Geometry
+https://stackoverflow.com/questions/37216343/how-to-effectively-use-trainglestripdrawmode-in-three-js
+https://threejs.org/docs/#api/en/core/Face3
+https://github.com/mrdoob/three.js/issues/2523
